@@ -1,7 +1,8 @@
 package com.lostlink.controller;
 
-import com.lostlink.entity.FoundItem;
+import com.lostlink.dto.FoundItemDTO;
 import com.lostlink.service.FoundItemService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,9 +12,7 @@ import java.util.List;
 @CrossOrigin
 public class FoundItemController {
 
-
     private final FoundItemService foundItemService;
-
 
     public FoundItemController(FoundItemService foundItemService) {
         this.foundItemService = foundItemService;
@@ -21,23 +20,22 @@ public class FoundItemController {
 
 
     @PostMapping
-    public FoundItem createFoundItem(
-            @RequestBody FoundItem foundItem) {
+    public FoundItemDTO createFoundItem(
+          @Valid @RequestBody FoundItemDTO foundItemDTO) {
 
-        return foundItemService.saveFoundItem(foundItem);
+        return foundItemService.saveFoundItem(foundItemDTO);
     }
 
 
     @GetMapping
-    public List<FoundItem> getAllFoundItems() {
+    public List<FoundItemDTO> getAllFoundItems() {
 
         return foundItemService.getAllFoundItems();
     }
 
 
-
     @GetMapping("/{id}")
-    public FoundItem getFoundItemById(
+    public FoundItemDTO getFoundItemById(
             @PathVariable Long id) {
 
         return foundItemService.getFoundItemById(id);
@@ -45,11 +43,12 @@ public class FoundItemController {
 
 
     @PutMapping("/{id}")
-    public FoundItem updateFoundItem(
+    public FoundItemDTO updateFoundItem(
             @PathVariable Long id,
-            @RequestBody FoundItem foundItem) {
+            @Valid
+            @RequestBody FoundItemDTO foundItemDTO) {
 
-        return foundItemService.updateFoundItem(id, foundItem);
+        return foundItemService.updateFoundItem(id, foundItemDTO);
     }
 
 

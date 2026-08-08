@@ -1,13 +1,14 @@
 package com.lostlink.controller;
 
-import com.lostlink.entity.LostItem;
+import com.lostlink.dto.LostItemDTO;
 import com.lostlink.service.LostItemService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/lost-items")
+@RequestMapping("/lost-items")
 public class LostItemController {
 
     private final LostItemService lostItemService;
@@ -16,27 +17,26 @@ public class LostItemController {
         this.lostItemService = lostItemService;
     }
 
-
     @PostMapping
-    public LostItem createLostItem(@RequestBody LostItem lostItem) {
-        return lostItemService.saveLostItem(lostItem);
+    public LostItemDTO createLostItem(@Valid @RequestBody LostItemDTO lostItemDTO) {
+        return lostItemService.saveLostItem(lostItemDTO);
     }
 
     @GetMapping
-    public List<LostItem> getAllLostItems() {
+    public List<LostItemDTO> getAllLostItems() {
         return lostItemService.getAllLostItems();
     }
 
-
     @GetMapping("/{id}")
-    public LostItem getLostItemById(@PathVariable Long id) {
+    public LostItemDTO getLostItemById(@PathVariable Long id) {
         return lostItemService.getLostItemById(id);
     }
 
     @PutMapping("/{id}")
-    public LostItem updateLostItem(@PathVariable Long id,
-                                   @RequestBody LostItem lostItem) {
-        return lostItemService.updateLostItem(id, lostItem);
+    public LostItemDTO updateLostItem(@PathVariable Long id,
+                                      @Valid
+                                      @RequestBody LostItemDTO lostItemDTO) {
+        return lostItemService.updateLostItem(id, lostItemDTO);
     }
 
     @DeleteMapping("/{id}")
@@ -44,38 +44,23 @@ public class LostItemController {
         lostItemService.deleteLostItem(id);
     }
 
-
-    @GetMapping("/search/category/{category}")
-    public List<LostItem> searchByCategory(
-            @PathVariable String category){
-
-        return lostItemService.searchByCategory(category);
+    @GetMapping("/category/{category}")
+    public List<LostItemDTO> getLostItemsByCategory(@PathVariable String category) {
+        return lostItemService.getLostItemsByCategory(category);
     }
 
-
-
-    @GetMapping("/search/status/{status}")
-    public List<LostItem> searchByStatus(
-            @PathVariable String status){
-
-        return lostItemService.searchByStatus(status);
+    @GetMapping("/status/{status}")
+    public List<LostItemDTO> getLostItemsByStatus(@PathVariable String status) {
+        return lostItemService.getLostItemsByStatus(status);
     }
 
-
-
-    @GetMapping("/search/location/{location}")
-    public List<LostItem> searchByLocation(
-            @PathVariable String location){
-
-        return lostItemService.searchByLocation(location);
+    @GetMapping("/location/{location}")
+    public List<LostItemDTO> getLostItemsByLocation(@PathVariable String location) {
+        return lostItemService.getLostItemsByLocation(location);
     }
-
-
 
     @GetMapping("/user/{userId}")
-    public List<LostItem> getLostItemsByUser(
-            @PathVariable Long userId){
-
+    public List<LostItemDTO> getLostItemsByUser(@PathVariable Long userId) {
         return lostItemService.getLostItemsByUser(userId);
     }
 }
