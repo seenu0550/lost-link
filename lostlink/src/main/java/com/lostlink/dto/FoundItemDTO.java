@@ -36,4 +36,6 @@ public class FoundItemDTO {
 
 
     private Long userId;
+
+    private String userName;
 }

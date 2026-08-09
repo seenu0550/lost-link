@@ -18,81 +18,86 @@ public class FoundItemService {
     private final FoundItemRepository foundItemRepository;
     private final UserRepository userRepository;
 
-    public FoundItemService(FoundItemRepository foundItemRepository,
-                            UserRepository userRepository) {
+    public FoundItemService(FoundItemRepository foundItemRepository, UserRepository userRepository) {
         this.foundItemRepository = foundItemRepository;
         this.userRepository = userRepository;
     }
 
-
-    public FoundItemDTO saveFoundItem(FoundItemDTO foundItemDTO) {
-
-        FoundItem foundItem = FoundItemMapper.toEntity(foundItemDTO);
-
-        FoundItem savedItem = foundItemRepository.save(foundItem);
-
-        return FoundItemMapper.toDTO(savedItem);
+    public FoundItemDTO saveFoundItem(FoundItemDTO dto) {
+        if (dto.getUserId() != null) {
+            userRepository.findById(dto.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + dto.getUserId()));
+        }
+        FoundItem item = FoundItemMapper.toEntity(dto);
+        if (item.getStatus() == null || item.getStatus().isBlank()) {
+            item.setStatus("AVAILABLE");
+        }
+        return FoundItemMapper.toDTO(foundItemRepository.save(item));
     }
 
-
     public List<FoundItemDTO> getAllFoundItems() {
-
-        return foundItemRepository.findAll()
-                .stream()
+        return foundItemRepository.findAll().stream()
                 .map(FoundItemMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
-
     public FoundItemDTO getFoundItemById(Long id) {
-
         return foundItemRepository.findById(id)
                 .map(FoundItemMapper::toDTO)
-                .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException("Found item not found with id: " + id));
     }
 
-    public FoundItemDTO updateFoundItem(Long id, FoundItemDTO updatedDTO) {
+    public FoundItemDTO updateFoundItem(Long id, FoundItemDTO dto) {
+        FoundItem existing = foundItemRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Found item not found with id: " + id));
 
-        FoundItem existingItem =
-                foundItemRepository.findById(id)
-                        .orElse(null);
+        existing.setItemName(dto.getItemName());
+        existing.setCategory(dto.getCategory());
+        existing.setDescription(dto.getDescription());
+        existing.setLocationFound(dto.getLocationFound());
+        existing.setDateFound(dto.getDateFound());
+        existing.setImageUrl(dto.getImageUrl());
+        existing.setStatus(dto.getStatus());
 
-
-        if(existingItem != null) {
-
-            existingItem.setItemName(updatedDTO.getItemName());
-            existingItem.setCategory(updatedDTO.getCategory());
-            existingItem.setDescription(updatedDTO.getDescription());
-            existingItem.setLocationFound(updatedDTO.getLocationFound());
-            existingItem.setDateFound(updatedDTO.getDateFound());
-            existingItem.setImageUrl(updatedDTO.getImageUrl());
-            existingItem.setStatus(updatedDTO.getStatus());
-
-
-            if (updatedDTO.getUserId() != null) {
-
-                User user = userRepository.findById(updatedDTO.getUserId())
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException("User not found with id: " + updatedDTO.getUserId()));
-
-                existingItem.setUser(user);
-            }
-
-
-            FoundItem updatedItem =
-                    foundItemRepository.save(existingItem);
-
-
-            return FoundItemMapper.toDTO(updatedItem);
+        if (dto.getUserId() != null) {
+            User user = userRepository.findById(dto.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + dto.getUserId()));
+            existing.setUser(user);
         }
 
-
-        return null;
+        return FoundItemMapper.toDTO(foundItemRepository.save(existing));
     }
 
     public void deleteFoundItem(Long id) {
-
+        if (!foundItemRepository.existsById(id))
+            throw new ResourceNotFoundException("Found item not found with id: " + id);
         foundItemRepository.deleteById(id);
     }
 
+    public List<FoundItemDTO> getFoundItemsByCategory(String category) {
+        return foundItemRepository.findByCategory(category).stream()
+                .map(FoundItemMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<FoundItemDTO> getFoundItemsByStatus(String status) {
+        return foundItemRepository.findByStatus(status).stream()
+                .map(FoundItemMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<FoundItemDTO> getFoundItemsByUser(Long userId) {
+        if (!userRepository.existsById(userId))
+            throw new ResourceNotFoundException("User not found with id: " + userId);
+        return foundItemRepository.findByUserId(userId).stream()
+                .map(FoundItemMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<FoundItemDTO> getFoundItemsByLocation(String locationFound) {
+        return foundItemRepository.findByLocationFound(locationFound).stream()
+                .map(FoundItemMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<FoundItemDTO> searchFoundItems(String keyword) {
+        return foundItemRepository.findByItemNameContainingIgnoreCase(keyword).stream()
+                .map(FoundItemMapper::toDTO).collect(Collectors.toList());
+    }
 }

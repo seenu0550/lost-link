@@ -13,4 +13,6 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long> {
     List<LostItem> findByLocationLost(String locationLost);
 
     List<LostItem> findByUserId(Long userId);
+
+    List<LostItem> findByItemNameContainingIgnoreCase(String keyword);
 }

@@ -36,4 +36,6 @@ public class LostItemDTO {
 
 
     private Long userId;
+
+    private String userName;
 }

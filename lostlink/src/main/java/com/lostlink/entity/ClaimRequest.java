@@ -1,15 +1,12 @@
 package com.lostlink.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 
 import java.time.LocalDate;
 
-
 @Entity
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Table(name="claim_requests")
 public class ClaimRequest {
     @Id

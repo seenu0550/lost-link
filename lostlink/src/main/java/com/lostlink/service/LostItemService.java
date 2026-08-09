@@ -2,8 +2,11 @@ package com.lostlink.service;
 
 import com.lostlink.dto.LostItemDTO;
 import com.lostlink.entity.LostItem;
+import com.lostlink.entity.User;
+import com.lostlink.exception.ResourceNotFoundException;
 import com.lostlink.mapper.LostItemMapper;
 import com.lostlink.repository.LostItemRepository;
+import com.lostlink.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,94 +16,88 @@ import java.util.stream.Collectors;
 public class LostItemService {
 
     private final LostItemRepository lostItemRepository;
+    private final UserRepository userRepository;
 
-    public LostItemService(LostItemRepository lostItemRepository) {
+    public LostItemService(LostItemRepository lostItemRepository, UserRepository userRepository) {
         this.lostItemRepository = lostItemRepository;
+        this.userRepository = userRepository;
     }
 
-    public LostItemDTO saveLostItem(LostItemDTO lostItemDTO) {
-
-        LostItem lostItem = LostItemMapper.toEntity(lostItemDTO);
-
-        lostItem = lostItemRepository.save(lostItem);
-
-        return LostItemMapper.toDTO(lostItem);
+    public LostItemDTO saveLostItem(LostItemDTO dto) {
+        if (dto.getUserId() != null) {
+            userRepository.findById(dto.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + dto.getUserId()));
+        }
+        LostItem item = LostItemMapper.toEntity(dto);
+        if (item.getStatus() == null || item.getStatus().isBlank()) {
+            item.setStatus("LOST");
+        }
+        return LostItemMapper.toDTO(lostItemRepository.save(item));
     }
 
     public List<LostItemDTO> getAllLostItems() {
-
-        return lostItemRepository.findAll()
-                .stream()
+        return lostItemRepository.findAll().stream()
                 .map(LostItemMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     public LostItemDTO getLostItemById(Long id) {
-
-        LostItem lostItem = lostItemRepository.findById(id).orElse(null);
-
-        return LostItemMapper.toDTO(lostItem);
+        return lostItemRepository.findById(id)
+                .map(LostItemMapper::toDTO)
+                .orElseThrow(() -> new ResourceNotFoundException("Lost item not found with id: " + id));
     }
 
-    public LostItemDTO updateLostItem(Long id, LostItemDTO lostItemDTO) {
+    public LostItemDTO updateLostItem(Long id, LostItemDTO dto) {
+        LostItem existing = lostItemRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Lost item not found with id: " + id));
 
-        LostItem existingItem = lostItemRepository.findById(id).orElse(null);
+        existing.setItemName(dto.getItemName());
+        existing.setCategory(dto.getCategory());
+        existing.setDescription(dto.getDescription());
+        existing.setLocationLost(dto.getLocationLost());
+        existing.setDateLost(dto.getDateLost());
+        existing.setImageUrl(dto.getImageUrl());
+        existing.setStatus(dto.getStatus());
 
-        if (existingItem != null) {
-
-            existingItem.setItemName(lostItemDTO.getItemName());
-            existingItem.setCategory(lostItemDTO.getCategory());
-            existingItem.setDescription(lostItemDTO.getDescription());
-            existingItem.setLocationLost(lostItemDTO.getLocationLost());
-            existingItem.setDateLost(lostItemDTO.getDateLost());
-            existingItem.setImageUrl(lostItemDTO.getImageUrl());
-            existingItem.setStatus(lostItemDTO.getStatus());
-
-            if (lostItemDTO.getUserId() != null) {
-                existingItem.getUser().setId(lostItemDTO.getUserId());
-            }
-
-            existingItem = lostItemRepository.save(existingItem);
-
-            return LostItemMapper.toDTO(existingItem);
+        if (dto.getUserId() != null) {
+            User user = userRepository.findById(dto.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + dto.getUserId()));
+            existing.setUser(user);
         }
 
-        return null;
+        return LostItemMapper.toDTO(lostItemRepository.save(existing));
     }
 
     public void deleteLostItem(Long id) {
+        if (!lostItemRepository.existsById(id))
+            throw new ResourceNotFoundException("Lost item not found with id: " + id);
         lostItemRepository.deleteById(id);
     }
 
     public List<LostItemDTO> getLostItemsByCategory(String category) {
-
-        return lostItemRepository.findByCategory(category)
-                .stream()
-                .map(LostItemMapper::toDTO)
-                .collect(Collectors.toList());
+        return lostItemRepository.findByCategory(category).stream()
+                .map(LostItemMapper::toDTO).collect(Collectors.toList());
     }
 
     public List<LostItemDTO> getLostItemsByStatus(String status) {
-
-        return lostItemRepository.findByStatus(status)
-                .stream()
-                .map(LostItemMapper::toDTO)
-                .collect(Collectors.toList());
+        return lostItemRepository.findByStatus(status).stream()
+                .map(LostItemMapper::toDTO).collect(Collectors.toList());
     }
 
     public List<LostItemDTO> getLostItemsByLocation(String locationLost) {
-
-        return lostItemRepository.findByLocationLost(locationLost)
-                .stream()
-                .map(LostItemMapper::toDTO)
-                .collect(Collectors.toList());
+        return lostItemRepository.findByLocationLost(locationLost).stream()
+                .map(LostItemMapper::toDTO).collect(Collectors.toList());
     }
 
     public List<LostItemDTO> getLostItemsByUser(Long userId) {
+        if (!userRepository.existsById(userId))
+            throw new ResourceNotFoundException("User not found with id: " + userId);
+        return lostItemRepository.findByUserId(userId).stream()
+                .map(LostItemMapper::toDTO).collect(Collectors.toList());
+    }
 
-        return lostItemRepository.findByUserId(userId)
-                .stream()
-                .map(LostItemMapper::toDTO)
-                .collect(Collectors.toList());
+    public List<LostItemDTO> searchLostItems(String keyword) {
+        return lostItemRepository.findByItemNameContainingIgnoreCase(keyword).stream()
+                .map(LostItemMapper::toDTO).collect(Collectors.toList());
     }
 }

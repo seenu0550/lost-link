@@ -7,9 +7,17 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ClaimRequestRepository extends JpaRepository<ClaimRequest,Long> {
+public interface ClaimRequestRepository extends JpaRepository<ClaimRequest, Long> {
 
     List<ClaimRequest> findByStatus(String status);
+
     List<ClaimRequest> findByUserId(Long userId);
 
+    List<ClaimRequest> findByLostItemId(Long lostItemId);
+
+    List<ClaimRequest> findByFoundItemId(Long foundItemId);
+
+    boolean existsByUserIdAndLostItemId(Long userId, Long lostItemId);
+
+    boolean existsByUserIdAndFoundItemId(Long userId, Long foundItemId);
 }

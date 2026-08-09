@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/claims")
+@RequestMapping("/api/claims")
 public class ClaimRequestController {
 
     private final ClaimRequestService claimRequestService;

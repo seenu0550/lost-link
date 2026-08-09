@@ -1,16 +1,12 @@
 package com.lostlink.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 
 import java.time.LocalDate;
 
 @Entity
 @Data
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Table(name="found_items")
 public class FoundItem {
 

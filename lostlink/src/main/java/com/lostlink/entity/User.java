@@ -1,29 +1,39 @@
 package com.lostlink.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Collection;
 import java.util.List;
-
 
 @Entity
 @Data
-@Table(name="users")
-public class User {
-
+@Table(name = "users")
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
-    @Column(unique = true,nullable = false)
+
+    @Column(unique = true, nullable = false)
     private String email;
-    @JsonIgnore
+
     private String password;
     private String phone;
     private String role;
-//    @OneToMany(mappedBy = "user")
-//    private List<LostItem> lostItems;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + (role != null ? role : "USER")));
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
 }

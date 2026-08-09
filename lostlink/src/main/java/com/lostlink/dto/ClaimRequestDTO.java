@@ -3,7 +3,7 @@ package com.lostlink.dto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 public class ClaimRequestDTO {
@@ -31,5 +31,5 @@ public class ClaimRequestDTO {
 
     private String status;
 
-    private LocalDateTime requestDate;
+    private LocalDate requestDate;
 }
